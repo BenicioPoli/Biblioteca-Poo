@@ -1,5 +1,5 @@
 namespace SistemaBiblioteca {
-    class TipoSocio {
+    public class TipoSocio {
         public int ID;
         public string NombreTipo;
         public int MaxSimultaneos;

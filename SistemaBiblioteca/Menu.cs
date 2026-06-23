@@ -1,4 +1,4 @@
-namespace ClinicaMedica {
+namespace SistemaBiblioteca {
 	public static class Menu {
 		public static T Choose<T>(string prompt, List<T> items, Func<T, string> displaySelector) {
 			if (items == null || items.Count == 0)
@@ -61,48 +61,61 @@ namespace ClinicaMedica {
 			}
 		}
 
-		public static string ReadFutureDate(string prompt, List<Disponibilidad> activeSchedules) {
+#if false
+		public static string ReadFutureDate(string prompt, List<Disponibilidad> activeSchedules)
+		{
 			// hdps en C# cómo que si no arranca el día en domingo anda mal
-			string[] dias = {"Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"};
+			string[] dias = { "Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado" };
 
-			while (true) {
+			while (true)
+			{
 				Console.Write($"{prompt} (AAAA-MM-DD): ");
 				string input = Console.ReadLine() ?? "";
 
-				if (DateTime.TryParse(input, out DateTime parsedDate) && parsedDate >= DateTime.Today) {
+				if (DateTime.TryParse(input, out DateTime parsedDate) && parsedDate >= DateTime.Today)
+				{
 					int dayIndex = (int)parsedDate.DayOfWeek;
 
-					if (activeSchedules.Any(d => d.DiaSemana == dayIndex)) {
+					if (activeSchedules.Any(d => d.DiaSemana == dayIndex))
+					{
 						return input;
 					}
 
 					Console.WriteLine($"No hay turnos un día {dias[dayIndex]}.  Elija otra fecha.");
-				} else {
+				}
+				else
+				{
 					Console.WriteLine("Fecha inválida.  Debe ser hoy o una fecha futura (AAAA-MM-DD.)");
 				}
 			}
 		}
 
-		public static string ReadValidTime(string prompt, string chosenDate, List<Disponibilidad> activeSchedules) {
+		public static string ReadValidTime(string prompt, string chosenDate, List<Disponibilidad> activeSchedules)
+		{
 			DateTime parsedDate = DateTime.Parse(chosenDate);
 			int dayIndex = (int)parsedDate.DayOfWeek;
 
-			while (true) {
+			while (true)
+			{
 				Console.Write($"{prompt} (HH:MM): ");
 				string input = Console.ReadLine() ?? "";
 
-				if (TimeSpan.TryParse(input, out TimeSpan inputTime)) {
-					bool match = activeSchedules.Any(d => 
-							d.DiaSemana == dayIndex && 
-							TimeSpan.Parse(d.HoraInicio) <= inputTime && 
+				if (TimeSpan.TryParse(input, out TimeSpan inputTime))
+				{
+					bool match = activeSchedules.Any(d =>
+							d.DiaSemana == dayIndex &&
+							TimeSpan.Parse(d.HoraInicio) <= inputTime &&
 							TimeSpan.Parse(d.HoraFin) >= inputTime);
 
 					if (match) return input;
 					Console.WriteLine("La hora ingresada está fuera del rango de atención para este día.");
-				} else {
+				}
+				else
+				{
 					Console.WriteLine("Formato de hora inválido.  Usá HH:MM.");
 				}
 			}
-		}
+		} 
+#endif
 	}
 }

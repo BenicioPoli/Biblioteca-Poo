@@ -1,5 +1,5 @@
 namespace SistemaBiblioteca {
-    class EstadoReserva {
+    public class EstadoReserva {
         public int ID;
         public string Descripcion;
     }

@@ -1,5 +1,5 @@
 namespace SistemaBiblioteca {
-    class Genero {
+    public class Genero {
         public int ID;
         public string Descripcion;
     }
