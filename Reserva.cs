@@ -10,5 +10,14 @@ namespace SistemaBiblioteca {
 
         public required int EstadoId {get; set;}
         public required EstadoReserva Estado {get; set;}
+
+        [System.Diagnostics.CodeAnalysis.SetsRequiredMembers]
+        public Reserva(int SocioId, string LibroISBN, string FechaReserva, int EstadoId)
+        {
+            this.SocioId = SocioId;
+            this.LibroISBN = LibroISBN;
+            this.FechaReserva = FechaReserva;
+            this.EstadoId = EstadoId;
+        }
     }
 }

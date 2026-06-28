@@ -12,5 +12,17 @@ namespace SistemaBiblioteca {
 
         public required int EstadoId {get; set;}
         public required EstadoPrestamo? Estado {get; set;}
+        
+        public int? Multa { get; set; }
+
+        [System.Diagnostics.CodeAnalysis.SetsRequiredMembers]
+        public Prestamo (int SocioId, string LibroISBN, string FechaPrestamo, string FechaVencimiento, int EstadoId)
+        {
+            this.SocioId = SocioId;
+            this.LibroISBN = LibroISBN;
+            this.FechaPrestamo = FechaPrestamo;
+            this.FechaVencimiento = FechaVencimiento;
+            this.EstadoId = EstadoId;
+        }
     }
 }
