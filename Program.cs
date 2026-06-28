@@ -7,6 +7,11 @@ namespace SistemaBiblioteca
 		static void Main(string[] args)
 		{
 			BibliotecaContext context = new BibliotecaContext();
+			// Supuestamente, esto obliga a EF a construir el modelo
+			// entero del DBContext, asi no queda ningún error
+			// de runtime sin detectar.
+			_ = context.Socios;
+
 			var socio = context.Socios
 				.Include(s => s.Tipo)
 				.ToList();

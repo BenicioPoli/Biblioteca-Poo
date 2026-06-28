@@ -54,9 +54,17 @@ namespace SistemaBiblioteca {
 				entity.ToTable("Libro");
 				entity.HasKey(l => l.ISBN);
 
-				entity.HasOne(l => l.Genero)
+				entity.HasMany(l => l.Generos)
 				      .WithMany()
-				      .HasForeignKey(l => l.GeneroId);
+				      .UsingEntity<Dictionary<string,object>>(
+						"LibroGenero",
+						j => j.HasOne<Genero>().WithMany().HasForeignKey("GeneroId"),
+						j => j.HasOne<Libro>().WithMany().HasForeignKey("LibroISBN"),
+						j => {
+							j.ToTable("LibroGenero");
+							j.HasKey("LibroISBN", "GeneroId");
+						}
+					);
 			});
 
 			modelBuilder.Entity<Prestamo>(entity => {
