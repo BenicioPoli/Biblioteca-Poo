@@ -209,6 +209,47 @@ namespace SistemaBiblioteca
 
             context.SaveChanges();
         }
+
+        public void LibrosMasPrestados()
+        {
+            var librosMasPrestados = context.Prestamos
+                .GroupBy(p => p.LibroISBN)
+                .Select(g => new { ISBN = g.Key, CantidadPrestamos = g.Count() })
+                .OrderByDescending(x => x.CantidadPrestamos)
+                .Take(5)
+                .ToList();
+
+            Console.WriteLine("Los 5 libros más prestados son:");
+            foreach (var libro in librosMasPrestados)
+            {
+                var libroInfo = context.Libros.FirstOrDefault(l => l.ISBN == libro.ISBN);
+                if (libroInfo != null)
+                {
+                    Console.WriteLine($"- {libroInfo.Titulo} por {libroInfo.Autor}, ISBN: {libroInfo.ISBN}, Cantidad de Prestamos: {libro.CantidadPrestamos}");
+                }
+            }
+        }
+
+        public void SociosConMultasPendientes()
+        {
+            var sociosConMultas = context.Prestamos
+                .Where(p => p.Multa != null)
+                .Where(p => p.Estado.Descripcion == "Vencido")
+                .GroupBy(p => p.SocioId)
+                .Select(g => new { NroSocio = g.Key, TotalMultas = g.Sum(p => p.Multa) })
+                .ToList();
+
+            Console.WriteLine("Socios con multas pendientes:");
+
+            foreach (var socio in sociosConMultas)
+            {
+                var socioInfo = context.Socios.FirstOrDefault(s => s.NroSocio == socio.NroSocio);
+                if (socioInfo != null)
+                {
+                    Console.WriteLine($"- {socioInfo.Nombre} {socioInfo.Apellido}, Nro Socio: {socioInfo.NroSocio}, Total Multas Pendientes: {socio.TotalMultas}");
+                }
+            }
+        }
     }
 
 }
