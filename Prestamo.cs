@@ -4,7 +4,7 @@ namespace SistemaBiblioteca {
         public required Libro Libro {get; set;}
         public required string FechaPrestamo {get; set;}
         public required string FechaVencimiento {get; set;}
-        public required string FechaDevolucion {get; set;}
-        public required EstadoPrestamo estado {get; set;}
+        public string? FechaDevolucion {get; set;}
+        public required EstadoPrestamo Estado {get; set;}
     }
 }

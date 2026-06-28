@@ -43,49 +43,66 @@ namespace SistemaBiblioteca {
 				entity.ToTable("Socio");
 				entity.HasKey(s => s.NroSocio);
 				entity.Property(s => s.NroSocio).ValueGeneratedOnAdd();
+
 				entity.HasOne(s => s.Tipo)
 				      .WithMany()
 				      .HasForeignKey("TipoSocio"); 
-				entity.Property(s => s.Activo); 
 			});
 
 			modelBuilder.Entity<Libro>(entity => {
 				entity.ToTable("Libro");
 				entity.HasKey(l => l.ISBN);
+
 				entity.HasOne(l => l.Genero)
 				      .WithMany()
-				      .HasForeignKey("Genero");
+				      .HasForeignKey("GeneroId");
+
+				entity.Property<string>("GeneroId")
+				      .HasColumnName("Genero");
 			});
 
 			modelBuilder.Entity<Prestamo>(entity => {
 				entity.ToTable("Prestamo");
 				entity.HasKey("SocioId", "LibroId");
+
+				entity.Property<int>("SocioId").HasColumnName("Socio");
+				entity.Property<string>("LibroId").HasColumnName("Libro");
+
 				entity.HasOne(p => p.Socio)
 				      .WithMany()
-				      .HasForeignKey("Socio");
+				      .HasForeignKey("SocioId");
+
 				entity.HasOne(p => p.Libro)
 				      .WithMany()
-				      .HasForeignKey("Libro");
-				entity.HasOne(p => p.estado)
+				      .HasForeignKey("LibroId");
+
+				entity.HasOne(p => p.Estado)
 				      .WithMany()
-				      .HasForeignKey("Estado");
-				entity.Property(p => p.FechaPrestamo).HasColumnName("FechaPrestamo");
-				entity.Property(p => p.FechaVencimiento).HasColumnName("FechaVencimiento");
-				entity.Property(p => p.FechaDevolucion).HasColumnName("FechaDevolucion");
+				      .HasForeignKey("EstadoId");
+
+				entity.Property<int>("EstadoId").HasColumnName("Estado");
 			});
 
 			modelBuilder.Entity<Reserva>(entity => {
 				entity.ToTable("Reserva");
-				entity.HasKey("Libro", "Socio");
+				entity.HasKey("LibroId", "SocioId");
+
+				entity.Property<string>("LibroId").HasColumnName("Libro");
+				entity.Property<int>("SocioId").HasColumnName("Socio");
+
 				entity.HasOne(r => r.Socio)
 				      .WithMany()
-				      .HasForeignKey("Socio");
+				      .HasForeignKey("SocioId");
+
 				entity.HasOne(r => r.Libro)
 				      .WithMany()
-				      .HasForeignKey("Libro");
+				      .HasForeignKey("LibroId");
+
 				entity.HasOne(r => r.Estado)
 				      .WithMany()
-				      .HasForeignKey("Estado");
+				      .HasForeignKey("EstadoId");
+
+				entity.Property<int>("EstadoId").HasColumnName("Estado");
 			});
 		}
 	}
