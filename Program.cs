@@ -26,14 +26,14 @@ namespace SistemaBiblioteca
 		}
 
 		public static bool PuedePrestamo(Socio socio, BibliotecaContext context) {
-			if (socio.Activo) {
+			if (!socio.Activo) {
 				Console.WriteLine("El socio no esta activo,por lo que no puede realizar un prestamo");
 				return false;
 			}
 
 			var prestamosDelSocio = context.Prestamos
 				.Include(p => p.Socio)
-				.Include(p => p.Estado)
+				.Where(p => p.SocioId == socio.NroSocio)
 				.ToList();
 
 			var prestamosVencidos = prestamosDelSocio
@@ -84,19 +84,25 @@ namespace SistemaBiblioteca
 			}
 
 			DateOnly fechaPrestamo = DateOnly.FromDateTime(DateTime.Now);
-			DateOnly fechaVencimiento = fechaPrestamo.AddDays(socio.Tipo.DiasPrestamo);
+			DateOnly fechaVencimiento = fechaPrestamo.AddDays(socio.Tipo?.DiasPrestamo ?? 7);
+
 			EstadoPrestamo estado = context.EstadosPrestamo
-				.Where(e => e.Descripcion == "Activo")
+				.Where(e => e.Descripcion.Contains("Activo"))
 				.FirstOrDefault()!;
+
 			Prestamo nuevoPrestamo = new Prestamo {
+				SocioId = socio.NroSocio,
 				Socio = socio,
+				LibroISBN = libroEncontrado.ISBN,
 				Libro = libroEncontrado,
+				EstadoId = estado.idEstado, 
+				Estado = estado,
+
 				FechaPrestamo = fechaPrestamo.ToString(),
 				FechaDevolucion = null,
-				FechaVencimiento = fechaVencimiento.ToString(),
-				Estado = estado
-
+				FechaVencimiento = fechaVencimiento.ToString()
 			};
+
 			context.Prestamos.Add(nuevoPrestamo);
 			libroEncontrado.CantidadCopias -= 1;
 			context.SaveChanges();
@@ -124,10 +130,13 @@ namespace SistemaBiblioteca
 				.Where(e => e.Descripcion == "Pendiente")
 				.FirstOrDefault();
 			Reserva nuevareserva = new Reserva {
+				SocioId = socio.NroSocio,
 				Socio = socio,
+				LibroISBN = libro.ISBN,
 				Libro = libro,
-				FechaReserva = fechaReserva.ToString(),
+				EstadoId = estado.idEstado,
 				Estado = estado!,
+				FechaReserva = fechaReserva.ToString()
 			};
 
 			context.Reservas.Add(nuevareserva);
