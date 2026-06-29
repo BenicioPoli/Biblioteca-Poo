@@ -14,17 +14,24 @@ namespace SistemaBiblioteca
             this.context = new BibliotecaContext();
         }
 
-        public Socio BusquedaSocio(int nroSocio)
+	public List<Libro> VerStubLibros() {
+		return context.Libros.ToList();
+	}
+
+	public Libro? BusquedaLibroPorTermino(string termino) {
+		return context.Libros
+			.Include(l => l.Generos)
+			.FirstOrDefault(l => l.Titulo.Contains(termino) || l.Autor.Contains(termino));
+	}
+
+        public Socio? BusquedaSocio(int nroSocio)
         {
-            var socio = context.Socios
-                .Include(s => s.Tipo)
-                .FirstOrDefault(s => s.NroSocio == nroSocio);
-            if (socio == null)
-            {
-                Console.WriteLine("Socio no encontrado.");
-                return null;
-            }
-            return socio;
+		return context.Socios
+			.Include(s => s.Tipo)
+		        .Include(s => s.Prestamos).ThenInclude(p => p.Estado)
+		        .Include(s => s.Reservas).ThenInclude(r => r.Estado)
+		        .Include(s => s.Reservas).ThenInclude(r => r.Libro)
+		        .FirstOrDefault(s => s.NroSocio == nroSocio);
         }
 
         public List<Prestamo> BusquedaPrestamos(Socio socio)
