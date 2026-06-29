@@ -37,47 +37,6 @@ namespace SistemaBiblioteca
             return prestamos;
         }
 
-        public void DetalleSocio(Socio socio)
-        {
-            Console.WriteLine($"Socio: {socio.Nombre} {socio.Apellido}");
-            Console.WriteLine($"Email: {socio.Email}");
-            Console.WriteLine($"Tipo de Socio: {socio.Tipo.NombreTipo}");
-            Console.WriteLine($"Activo: {(socio.Activo ? "Sí" : "No")}");
-            Console.WriteLine("Prestamos Activos:");
-            var prestamos = BusquedaPrestamos(socio);
-            var prestamosActivos = prestamos.Where(p => p.Estado.Descripcion == "Activo").ToList();
-
-            foreach (var prestamo in prestamosActivos)
-            {
-                Console.WriteLine($"- Libro ISBN: {prestamo.LibroISBN}, Estado: {prestamo.Estado.Descripcion}, Fecha Prestamo: {prestamo.FechaPrestamo}, Fecha Vencimiento: {prestamo.FechaVencimiento}, Fecha Devolucion: {prestamo.FechaDevolucion ?? "No devuelto"}, Multa: {(prestamo.Multa.HasValue ? prestamo.Multa.Value.ToString() : "No aplica")}");
-            }
-
-            Console.WriteLine("Reservas:");
-            var reservas = context.Reservas
-                .Include(r => r.Socio)
-                .Include(r => r.Libro)
-                .Include(r => r.Estado)
-                .Where(r => r.Socio.NroSocio == socio.NroSocio)
-                .ToList();
-            foreach (var reserva in reservas)
-            {
-                Console.WriteLine($"- Libro: {reserva.Libro.Titulo}, Estado: {reserva.Estado.Descripcion}, Fecha Reserva: {reserva.FechaReserva}");
-            }
-            Console.WriteLine("Historial de Devoluciones:");
-            var devoluciones = prestamos.Where(p => p.Estado.Descripcion == "Devuelto").ToList();
-            foreach (var devolucion in devoluciones)
-            {
-                Console.WriteLine($"- Libro ISBN: {devolucion.LibroISBN}, Fecha Devolucion: {devolucion.FechaDevolucion}, Multa: {(devolucion.Multa.HasValue ? devolucion.Multa.Value.ToString() : "No aplica")}");
-            }
-
-            Console.WriteLine("Prestamos con Multas Pendientes:");
-            var multasPendientes = prestamos.Where(p => p.Estado.Descripcion == "Vencido").ToList();
-            foreach (var prestamo in multasPendientes)
-            {
-                Console.WriteLine($"- Libro ISBN: {prestamo.LibroISBN}, Fecha Vencimiento: {prestamo.FechaVencimiento}, Multa: {prestamo.Multa.Value}");
-            }
-        }
-
         public void HacerPrestamo(Socio socio)
         {
             Console.WriteLine("Ingrese titulo o autor del Libro que desea retirar: ");

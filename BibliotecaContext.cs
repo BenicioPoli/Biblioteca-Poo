@@ -48,6 +48,16 @@ namespace SistemaBiblioteca {
 				entity.HasOne(s => s.Tipo)
 				      .WithMany()
 				      .HasForeignKey(s => s.TipoId);  
+
+				entity.HasMany(s => s.Prestamos)
+				      .WithOne(p => p.Socio)
+				      .HasForeignKey(p => p.SocioId)
+				      .OnDelete(DeleteBehavior.Cascade);
+
+				entity.HasMany(s => s.Reservas)
+				      .WithOne(r => r.Socio)
+				      .HasForeignKey(r => r.SocioId)
+				      .OnDelete(DeleteBehavior.Cascade);
 			});
 
 			modelBuilder.Entity<Libro>(entity => {
