@@ -69,10 +69,10 @@ namespace SistemaBiblioteca {
 				      .UsingEntity<Dictionary<string,object>>(
 						"LibroGenero",
 						j => j.HasOne<Genero>().WithMany().HasForeignKey("GeneroId"),
-						j => j.HasOne<Libro>().WithMany().HasForeignKey("LibroISBN"),
+						j => j.HasOne<Libro>().WithMany().HasForeignKey("ISBN"),
 						j => {
 							j.ToTable("LibroGenero");
-							j.HasKey("LibroISBN", "GeneroId");
+							j.HasKey("ISBN", "GeneroId");
 						}
 					);
 
@@ -93,7 +93,6 @@ namespace SistemaBiblioteca {
 				entity.Property(p => p.LibroISBN).HasColumnName("Libro");
 				entity.Property(p => p.EstadoId).HasColumnName("Estado");
 
-				entity.HasOne(p => p.Libro).WithMany().HasForeignKey(p => p.LibroISBN);
 				entity.HasOne(p => p.Estado).WithMany().HasForeignKey(p => p.EstadoId);
 			});
 
@@ -105,7 +104,6 @@ namespace SistemaBiblioteca {
 				entity.Property(r => r.SocioId).HasColumnName("Socio");
 				entity.Property(r => r.EstadoId).HasColumnName("Estado");
 
-				entity.HasOne(r => r.Libro).WithMany().HasForeignKey(r => r.LibroISBN);
 				entity.HasOne(r => r.Estado).WithMany().HasForeignKey(r => r.EstadoId);
 			});
 		}

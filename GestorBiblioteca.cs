@@ -187,6 +187,69 @@ namespace SistemaBiblioteca
                 }
             }
         }
-    }
 
+        public void PrestamosVencidos() {
+            DateOnly hoy = DateOnly.FromDateTime(DateTime.Now);
+            string fechaHoyStr = hoy.ToString();
+
+            var prestamosVencidos = context.Prestamos
+                .Include(p => p.Socio)
+                .Include(p => p.Libro)
+                .Include(p => p.Estado)
+                .Where(p => p.Estado.Descripcion == "Activo")
+                .ToList()
+                .Where(p => DateOnly.Parse(p.FechaVencimiento) < hoy)
+                .ToList();
+
+            Console.WriteLine("Préstamos vencidos no devueltos:");
+            if (!prestamosVencidos.Any()) {
+                Console.WriteLine("(ninguno)");
+            }
+
+            foreach (var p in prestamosVencidos) {
+                Console.WriteLine($"- Libro: {p.Libro?.Titulo}, Socio: {p.Socio?.Nombre} {p.Socio?.Apellido} (N° {p.SocioId}), Venció el: {p.FechaVencimiento}");
+            }
+        }
+
+        public void DisponibilidadLibro(Libro libro) {
+            int reservasPendientes = context.Reservas
+                .Include(r => r.Estado)
+                .Where(r => r.LibroISBN == libro.ISBN && r.Estado.Descripcion == "Pendiente")
+                .Count();
+
+            Console.WriteLine();
+            Console.WriteLine($"Disponibilidad de: {libro.Titulo} ({libro.Autor})");
+            Console.WriteLine($"- ISBN: {libro.ISBN}");
+            Console.WriteLine($"- Copias disponibles para préstamo: {libro.CantidadCopias}");
+            Console.WriteLine($"- Reservas activas en espera: {reservasPendientes}");
+        }
+
+        public void HistorialSocio(Socio socio) {
+            Console.WriteLine();
+            Console.WriteLine($">>> Historial del Socio {socio.Nombre} {socio.Apellido} (N° {socio.NroSocio})");
+            
+            Console.WriteLine();
+            Console.WriteLine("Préstamos:");
+            if (!socio.Prestamos.Any()) {
+                Console.WriteLine("(ninguno)");
+            }
+
+            foreach (var p in socio.Prestamos) {
+                context.Entry(p).Reference(x => x.Libro).Load(); 
+                Console.WriteLine($"- {p.Libro?.Titulo} | Desde: {p.FechaPrestamo} | Hasta: {p.FechaVencimiento} | Estado: {p.Estado?.Descripcion} {(p.Multa > 0 ? $"| Multa: ${p.Multa}" : "")}");
+            }
+
+            Console.WriteLine();
+            Console.WriteLine("Reservas:");
+            if (!socio.Reservas.Any()) {
+                Console.WriteLine("(ninguna)");
+            }
+
+            foreach (var r in socio.Reservas) {
+                Console.WriteLine($"- {r.Libro?.Titulo} | Fecha: {r.FechaReserva} | Estado: {r.Estado?.Descripcion.Trim()}");
+            }
+
+            Console.WriteLine();
+        }
+    }
 }

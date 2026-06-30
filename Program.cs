@@ -63,7 +63,7 @@ namespace SistemaBiblioteca
 					return;
 				}
 
-				Libro libro = Menu.ReadValid<Libro>("Ingrese título o autor del libro a devolver", obtenerLibro, "No se encontró ningún libro con ese término.");
+				Libro libro = Menu.ReadValid<Libro>("Ingrese título o autor del libro a tomar", obtenerLibro, "No se encontró ningún libro con ese término.");
 
 				Console.WriteLine();
 				Console.WriteLine("Libro encontrado:");
@@ -114,9 +114,32 @@ namespace SistemaBiblioteca
 		}
 
 		static void VerReportes() {
+			var obtenerLibro = (string input) => {
+				if (string.IsNullOrWhiteSpace(input)) return null;
+				return gestor.BusquedaLibroPorTermino(input);
+			};
+
+			var obtenerSocio = (string input) => {
+				if (!int.TryParse(input, out int nroSocio)) return null;
+				return gestor.BusquedaSocio(nroSocio);
+			};
+
+			Action consultarDisponibilidad = () => {
+				Libro libro = Menu.ReadValid<Libro>("Ingrese título o ISBN del libro a consultar", obtenerLibro, "No se encontró ningún libro con ese término.");
+				gestor.DisponibilidadLibro(libro);
+			};
+
+			Action consultarHistorialSocio = () => {
+				Socio socio = Menu.ReadValid<Socio>("Ingrese el número de socio a consultar", obtenerSocio, "Socio no encontrado.");
+				gestor.HistorialSocio(socio);
+			};
+
 			var commands = new List<(string Description, Action Callback)>{
 				("Top 5 libros más prestados", gestor.LibrosMasPrestados),
 				("Listado de socios con multas pendientes", gestor.SociosConMultasPendientes),
+				("Listado de préstamos vencidos", gestor.PrestamosVencidos),
+				("Consultar disponibilidad de un libro", consultarDisponibilidad),
+				("Consultar historial de un socio", consultarHistorialSocio),
 			};
 
 			Menu.RunCommand("Sección Reportes Administrativos", commands);
