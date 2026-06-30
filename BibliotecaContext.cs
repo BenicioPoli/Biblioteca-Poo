@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace SistemaBiblioteca {
 	public class BibliotecaContext : DbContext {
@@ -92,6 +93,18 @@ namespace SistemaBiblioteca {
 				entity.Property(p => p.SocioId).HasColumnName("Socio");
 				entity.Property(p => p.LibroISBN).HasColumnName("Libro");
 				entity.Property(p => p.EstadoId).HasColumnName("Estado");
+
+				entity.Property(p => p.FechaPrestamo).HasConversion(
+					v => ((DateTimeOffset)DateTime.Parse(v)).ToUnixTimeSeconds(),
+					v => DateOnly.FromDateTime(DateTimeOffset.FromUnixTimeSeconds(v).DateTime).ToString());
+
+				entity.Property(p => p.FechaVencimiento).HasConversion(
+					v => ((DateTimeOffset)DateTime.Parse(v)).ToUnixTimeSeconds(),
+					v => DateOnly.FromDateTime(DateTimeOffset.FromUnixTimeSeconds(v).DateTime).ToString());
+
+				entity.Property(p => p.FechaDevolucion).HasConversion(
+					v => ((DateTimeOffset)DateTime.Parse(v)).ToUnixTimeSeconds(),
+					v => DateOnly.FromDateTime(DateTimeOffset.FromUnixTimeSeconds(v).DateTime).ToString());
 
 				entity.HasOne(p => p.Estado).WithMany().HasForeignKey(p => p.EstadoId);
 			});

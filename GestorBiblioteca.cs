@@ -53,9 +53,15 @@ namespace SistemaBiblioteca
                        .Where(e => e.Descripcion.Contains("Activo"))
                        .FirstOrDefault()!;
 
-            Prestamo nuevoPrestamo = new Prestamo(socio.NroSocio, libro.ISBN, fechaPrestamo.ToString(), fechaVencimiento.ToString(), estado.idEstado);
+	    var prestamo = context.Prestamos.FirstOrDefault(p => p.SocioId == socio.NroSocio && p.LibroISBN == libro.ISBN);
+	    if (prestamo != null) {
+		    Console.WriteLine("Ya has reservado este libro, no se realizó la reserva");
+		    return;
+	    } else {
+		    prestamo = new Prestamo(socio.NroSocio, libro.ISBN, fechaPrestamo.ToString(), fechaVencimiento.ToString(), estado.idEstado);
+	    }
 
-            context.Prestamos.Add(nuevoPrestamo);
+            context.Prestamos.Add(prestamo);
             libro.CantidadCopias -= 1;
             context.SaveChanges();
             Console.WriteLine("Préstamo registrado con éxito.");
@@ -68,7 +74,7 @@ namespace SistemaBiblioteca
                 .Include(r => r.Libro)
                 .Include(r => r.Estado)
                 .Where(r => r.Socio.NroSocio == socio.NroSocio)
-                .Where(r => r.Estado.Descripcion == "Pendiente")
+                .Where(r => r.Estado.Descripcion.Contains("Pendiente"))
                 .Where(r => r.Libro.ISBN == libro.ISBN)
                 .FirstOrDefault();
 
@@ -80,7 +86,7 @@ namespace SistemaBiblioteca
 
             DateOnly fechaReserva = DateOnly.FromDateTime(DateTime.Now);
             var estado = context.EstadosReserva
-                .Where(e => e.Descripcion == "Pendiente")
+                .Where(e => e.Descripcion.Contains("Pendiente"))
                 .FirstOrDefault();
 
             Reserva nuevareserva = new Reserva(socio.NroSocio, libro.ISBN, fechaReserva.ToString(), estado!.idEstado);
@@ -91,13 +97,13 @@ namespace SistemaBiblioteca
         }
 
         public void HacerDevolucion(Socio socio,Libro libro){
-
-           var prestamoActivo = context.Prestamos
-           .Include(p => p.Estado)
-           .Where(p => p.Socio.NroSocio == socio.NroSocio)
-           .Where(p => p.Libro.ISBN == libro.ISBN)
-           .Where(p => p.Estado.Descripcion == "Activo")
-           .FirstOrDefault(); 
+           var prestamoActivo =
+		   context.Prestamos
+           		.Include(p => p.Estado)
+           		.Where(p => p.Socio.NroSocio == socio.NroSocio)
+           		.Where(p => p.Libro.ISBN == libro.ISBN)
+           		.Where(p => p.Estado.Descripcion.Contains("Activo"))
+           		.FirstOrDefault(); 
 
            if(prestamoActivo == null){
                Console.WriteLine("No tiene un prestamo activo con este libro");
@@ -112,21 +118,21 @@ namespace SistemaBiblioteca
                 prestamoActivo.Multa = socio.Tipo.MultaXDia * (fechaDevolucion.DayNumber - fechaVencimiento.DayNumber);
                 Console.WriteLine("Entrego el libro tarde va a tener que pagar una multa de: " + prestamoActivo.Multa);
                 prestamoActivo.EstadoId = context.EstadosPrestamo
-                    .Where(e => e.Descripcion == "Vencido")
+                    .Where(e => e.Descripcion.Contains("Vencido"))
                     .FirstOrDefault()!.idEstado;
            }
            else
            {
                 Console.WriteLine("Entrego el libro a tiempo, no tiene que pagar multa");   
                 prestamoActivo.EstadoId = context.EstadosPrestamo
-                    .Where(e => e.Descripcion == "Devuelto")
+                    .Where(e => e.Descripcion.Contains("Devuelto"))
                     .FirstOrDefault()!.idEstado;
            }
            
            var ReservaLibro = context.Reservas
                 .Include(r => r.Estado)
                 .Where(r => r.Libro.ISBN == libro.ISBN)
-                .Where(r => r.Estado.Descripcion == "Pendiente")
+                .Where(r => r.Estado.Descripcion.Contains("Pendiente"))
                 .ToList()
                 .OrderBy(r => DateOnly.Parse(r.FechaReserva))
                 .FirstOrDefault();
@@ -134,7 +140,7 @@ namespace SistemaBiblioteca
             if (ReservaLibro != null)
             {
                 ReservaLibro.EstadoId = context.EstadosReserva
-                    .Where(e => e.Descripcion == "Cumplida")
+                    .Where(e => e.Descripcion.Contains("Cumplida"))
                     .FirstOrDefault()!.idEstado;
                 Console.WriteLine("La reserva mas antigua del libro paso a Cumplida");
             }
@@ -171,7 +177,7 @@ namespace SistemaBiblioteca
         {
             var sociosConMultas = context.Prestamos
                 .Where(p => p.Multa != null)
-                .Where(p => p.Estado.Descripcion == "Vencido")
+                .Where(p => p.Estado.Descripcion.Contains("Vencido"))
                 .GroupBy(p => p.SocioId)
                 .Select(g => new { NroSocio = g.Key, TotalMultas = g.Sum(p => p.Multa) })
                 .ToList();
@@ -196,7 +202,7 @@ namespace SistemaBiblioteca
                 .Include(p => p.Socio)
                 .Include(p => p.Libro)
                 .Include(p => p.Estado)
-                .Where(p => p.Estado.Descripcion == "Activo")
+                .Where(p => p.Estado.Descripcion.Contains("Activo"))
                 .ToList()
                 .Where(p => DateOnly.Parse(p.FechaVencimiento) < hoy)
                 .ToList();
@@ -214,7 +220,7 @@ namespace SistemaBiblioteca
         public void DisponibilidadLibro(Libro libro) {
             int reservasPendientes = context.Reservas
                 .Include(r => r.Estado)
-                .Where(r => r.LibroISBN == libro.ISBN && r.Estado.Descripcion == "Pendiente")
+                .Where(r => r.LibroISBN == libro.ISBN && r.Estado.Descripcion.Contains("Pendiente"))
                 .Count();
 
             Console.WriteLine();

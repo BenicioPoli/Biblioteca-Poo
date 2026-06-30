@@ -32,7 +32,7 @@ namespace SistemaBiblioteca {
 
             var cantLibrosPuedeSocio = Tipo.MaxSimultaneos;
             var prestamosActivos = Prestamos
-                .Where(p => p.Estado.Descripcion == "Activo")
+                .Where(p => p.Estado.Descripcion.Contains("Activo"))
                 .ToList();
 
             if (prestamosActivos.Count >= cantLibrosPuedeSocio)
@@ -50,7 +50,7 @@ namespace SistemaBiblioteca {
             Console.WriteLine($"Tipo de Socio: {Tipo.NombreTipo}");
             Console.WriteLine($"Activo: {(Activo ? "Sí" : "No")}");
             Console.WriteLine("Prestamos Activos:");
-            var prestamosActivos = Prestamos.Where(p => p.Estado.Descripcion == "Activo").ToList();
+            var prestamosActivos = Prestamos.Where(p => p.Estado.Descripcion.Contains("Activo")).ToList();
 
             foreach (var prestamo in prestamosActivos)
             {
@@ -64,14 +64,14 @@ namespace SistemaBiblioteca {
             }
 	    
             Console.WriteLine("Historial de Devoluciones:");
-            var devoluciones = Prestamos.Where(p => p.Estado.Descripcion == "Devuelto").ToList();
+            var devoluciones = Prestamos.Where(p => p.Estado.Descripcion.Contains("Devuelto")).ToList();
             foreach (var devolucion in devoluciones)
             {
                 Console.WriteLine($"- Libro ISBN: {devolucion.LibroISBN}, Fecha Devolucion: {devolucion.FechaDevolucion}, Multa: {(devolucion.Multa.HasValue ? devolucion.Multa.Value.ToString() : "No aplica")}");
             }
 
             Console.WriteLine("Prestamos con Multas Pendientes:");
-            var multasPendientes = Prestamos.Where(p => p.Estado.Descripcion == "Vencido").ToList();
+            var multasPendientes = Prestamos.Where(p => p.Estado.Descripcion.Contains("Vencido")).ToList();
             foreach (var prestamo in multasPendientes)
             {
                 Console.WriteLine($"- Libro ISBN: {prestamo.LibroISBN}, Fecha Vencimiento: {prestamo.FechaVencimiento}, Multa: {prestamo.Multa.Value}");
