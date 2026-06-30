@@ -50,12 +50,12 @@ namespace SistemaBiblioteca {
 				      .HasForeignKey(s => s.TipoId);  
 
 				entity.HasMany(s => s.Prestamos)
-				      .WithOne(p => p.Socio)
+				      .WithOne(p => p.Socio!)
 				      .HasForeignKey(p => p.SocioId)
 				      .OnDelete(DeleteBehavior.Cascade);
 
 				entity.HasMany(s => s.Reservas)
-				      .WithOne(r => r.Socio)
+				      .WithOne(r => r.Socio!)
 				      .HasForeignKey(r => r.SocioId)
 				      .OnDelete(DeleteBehavior.Cascade);
 			});
@@ -75,6 +75,14 @@ namespace SistemaBiblioteca {
 							j.HasKey("LibroISBN", "GeneroId");
 						}
 					);
+
+                entity.HasMany<Prestamo>()
+                      .WithOne(p => p.Libro!)
+                      .HasForeignKey(p => p.LibroISBN);
+
+                entity.HasMany<Reserva>()
+                      .WithOne(r => r.Libro!)
+                      .HasForeignKey(r => r.LibroISBN);
 			});
 
 			modelBuilder.Entity<Prestamo>(entity => {
@@ -85,7 +93,6 @@ namespace SistemaBiblioteca {
 				entity.Property(p => p.LibroISBN).HasColumnName("Libro");
 				entity.Property(p => p.EstadoId).HasColumnName("Estado");
 
-				entity.HasOne(p => p.Socio).WithMany().HasForeignKey(p => p.SocioId);
 				entity.HasOne(p => p.Libro).WithMany().HasForeignKey(p => p.LibroISBN);
 				entity.HasOne(p => p.Estado).WithMany().HasForeignKey(p => p.EstadoId);
 			});
@@ -98,7 +105,6 @@ namespace SistemaBiblioteca {
 				entity.Property(r => r.SocioId).HasColumnName("Socio");
 				entity.Property(r => r.EstadoId).HasColumnName("Estado");
 
-				entity.HasOne(r => r.Socio).WithMany().HasForeignKey(r => r.SocioId);
 				entity.HasOne(r => r.Libro).WithMany().HasForeignKey(r => r.LibroISBN);
 				entity.HasOne(r => r.Estado).WithMany().HasForeignKey(r => r.EstadoId);
 			});

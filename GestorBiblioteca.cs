@@ -44,50 +44,21 @@ namespace SistemaBiblioteca
             return prestamos;
         }
 
-        public void HacerPrestamo(Socio socio)
-        {
-            Console.WriteLine("Ingrese titulo o autor del Libro que desea retirar: ");
-            string libro = Console.ReadLine()!;
-            Libro libroEncontrado = context.Libros
-                .Where(l => l.Titulo.Contains(libro) || l.Autor.Contains(libro))
-                .FirstOrDefault()!;
-
-            if (libroEncontrado == null)
-            {
-                Console.WriteLine("No se encontro el libro solicitado,vuelva a intentarlo");
-                HacerPrestamo(socio);
-                return;
-            }
-
-            if (libroEncontrado.CantidadCopias <= 0)
-            {
-                Console.WriteLine("El libro solicitado no esta disponible,desea reservarlo? (s/n)");
-                string respuesta = Console.ReadLine()!;
-                if (respuesta == "s")
-                {
-                    HacerReserva(socio, libroEncontrado);
-                    return;
-                }
-                else
-                {
-                    return;
-                }
-            }
-
+        public void HacerPrestamo(Socio socio, Libro libro) {
             DateOnly fechaPrestamo = DateOnly.FromDateTime(DateTime.Now);
             DateOnly fechaVencimiento = fechaPrestamo.AddDays(socio.Tipo?.DiasPrestamo ?? 7);
 
-            EstadoPrestamo estado = context.EstadosPrestamo
-                .Where(e => e.Descripcion.Contains("Activo"))
-                .FirstOrDefault()!;
+            EstadoPrestamo estado =
+                context.EstadosPrestamo
+                       .Where(e => e.Descripcion.Contains("Activo"))
+                       .FirstOrDefault()!;
 
-            Prestamo nuevoPrestamo = new Prestamo(socio.NroSocio, libroEncontrado.ISBN, fechaPrestamo.ToString(), fechaVencimiento.ToString(), estado.idEstado);
+            Prestamo nuevoPrestamo = new Prestamo(socio.NroSocio, libro.ISBN, fechaPrestamo.ToString(), fechaVencimiento.ToString(), estado.idEstado);
 
             context.Prestamos.Add(nuevoPrestamo);
-            libroEncontrado.CantidadCopias -= 1;
+            libro.CantidadCopias -= 1;
             context.SaveChanges();
-            Console.WriteLine("Prestamo Registrado con exito");
-
+            Console.WriteLine("Préstamo registrado con éxito.");
         }
 
         public void HacerReserva(Socio socio, Libro libro)

@@ -27,7 +27,6 @@ namespace SistemaBiblioteca
 					Socio s = Menu.ReadValid<Socio>("Ingrese su número de socio", obtenerSocio, "Socio no encontrado.");
 					ManejoSocio(s);
 				 }),
-				// ("Registrarse", () => {}), // se llega?
 				("Ver consultas y reportes", VerReportes),
 			};
 
@@ -40,46 +39,78 @@ namespace SistemaBiblioteca
 				return gestor.BusquedaLibroPorTermino(input);
 			};
 
-			var commands = new List<(string Description, Action Callback)>{
-				("Realizar préstamo", () => {
-					if (socio.PuedePrestamo()) {
-						gestor.HacerPrestamo(socio);
-					} else {
-						Console.WriteLine("No puedes hacer préstamos actualmente.");
-					}
-				 }),
-				("Realizar devolución", () => {
-				 	Libro libro = Menu.ReadValid<Libro>("Ingrese título o autor del libro a devolver", obtenerLibro, "No se encontró ningún libro con ese término.");
+			var nuevaReserva = () => {
+				if (!socio.Activo) {
+					Console.WriteLine("El socio no está activo, por lo que no puede realizar reservas.");
+					return;
+				}
 
-					Console.WriteLine();
-					Console.WriteLine("Libro encontrado:");
-					libro.ImprimirDetalle();
-					Console.WriteLine();
+				Libro libro = Menu.ReadValid<Libro>("Ingrese título o autor del libro a reservar", obtenerLibro, "No se encontró ningún libro con ese término.");
 
-					if (Menu.ConfirmPositive("¿Confirmar devolución de este libro?")) {
-						gestor.HacerDevolucion(socio, libro);
-					}
-				 }),
-				("Nueva reserva", () => {
-				 	Libro libro = Menu.ReadValid<Libro>("Ingrese título o autor del libro a reservar", obtenerLibro, "No se encontró ningún libro con ese término.");
+				Console.WriteLine();
+				Console.WriteLine("Libro encontrado:");
+				libro.ImprimirDetalle();
+				Console.WriteLine();
 
-					Console.WriteLine();
-					Console.WriteLine("Libro encontrado:");
-					libro.ImprimirDetalle();
-					Console.WriteLine();
-
-					if (Menu.ConfirmPositive("¿Confirmar la reserva de este libro?")) {
-						gestor.HacerReserva(socio, libro);
-					}
-				 }),
-				("Ver detalle", () => {
-				 	Console.WriteLine();
-					socio.ImprimirDetalle();
-				 	Console.WriteLine();
-				 }),
+				if (Menu.ConfirmPositive("¿Confirmar la reserva de este libro?")) {
+					gestor.HacerReserva(socio, libro);
+				}
 			};
 
-			Menu.RunCommand("Panel de socio", commands);
+			var realizarPrestamo = () => {
+				if (!socio.PuedePrestamo()) {
+					Console.WriteLine("No puedes hacer préstamos actualmente.");
+					return;
+				}
+
+				Libro libro = Menu.ReadValid<Libro>("Ingrese título o autor del libro a devolver", obtenerLibro, "No se encontró ningún libro con ese término.");
+
+				Console.WriteLine();
+				Console.WriteLine("Libro encontrado:");
+				libro.ImprimirDetalle();
+				Console.WriteLine();
+
+				if (libro.CantidadCopias <= 0) {
+					Console.WriteLine("El libro no tiene copias disponibles.");
+					if (Menu.ConfirmPositive("¿Desea ir al flujo de reservas?")) {
+						nuevaReserva();
+					}
+
+					return;
+				}
+
+				if (Menu.ConfirmPositive("¿Confirmar el préstamo de este libro?")) {
+					gestor.HacerPrestamo(socio, libro);
+				}
+			};
+
+			var realizarDevolucion = () => {
+				Libro libro = Menu.ReadValid<Libro>("Ingrese título o autor del libro a devolver", obtenerLibro, "No se encontró ningún libro con ese término.");
+
+				Console.WriteLine();
+				Console.WriteLine("Libro encontrado:");
+				libro.ImprimirDetalle();
+				Console.WriteLine();
+
+				if (Menu.ConfirmPositive("¿Confirmar devolución de este libro?")) {
+					gestor.HacerDevolucion(socio, libro);
+				}
+			};
+
+			var verDetalle = () => {
+				Console.WriteLine();
+				socio.ImprimirDetalle();
+				Console.WriteLine();
+			};
+
+			var commands = new List<(string Description, Action Callback)>{
+				("Realizar préstamo", realizarPrestamo),
+				("Realizar devolución", realizarDevolucion),
+				("Nueva reserva", nuevaReserva),
+				("Ver detalle", verDetalle),
+			};
+
+			Menu.RunCommand($"Panel de socio: {socio.Nombre} {socio.Apellido}", commands);
 		}
 
 		static void VerReportes() {
